@@ -75,7 +75,7 @@ Parameters:
     Default: "arn:aws:iam::819518832852:role/aws-sam-cli-managed-ST-pi-CloudFormationExecutionR-QL3FMFO6KPO"
   StArtifactBucket:
     Type: String
-    Default: "http-crud-sam-bucket-St"
+    Default: "http-crud-sam-bucket-st"
   StImageRepository:
     Type: String
     # If there are functions with "Image" PackageType in your template,
