@@ -296,6 +296,20 @@ Resources:
                   Provider: Manual
                   Version: "1"
                 RunOrder: 1
+                Configuration:
+                  ProjectName: !Ref CodeBuildProjectApprove
+                  EnvironmentVariables: !Sub |
+                    [
+                      {"name": "ENV_TEMPLATE", "value": "packaged-st.yaml"},
+                      {"name": "ENV_REGION", "value": "${StRegion}"},
+                      {"name": "ENV_STACK_NAME", "value": "${StStackName}"},
+                      {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${StPipelineExecutionRole}"},
+                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${StCloudFormationExecutionRole}"},
+                      {"name": "ENV_BUCKET", "value": "${StArtifactBucket}"},
+                      {"name": "ENV_IMAGE_REPOSITORY", "value": "${StImageRepository}"}
+                    ]
+                InputArtifacts:
+                  - Name: BuildArtifactAsZip
               - Name: DeploySt
                 ActionTypeId:
                   Category: Build
@@ -307,12 +321,12 @@ Resources:
                   EnvironmentVariables: !Sub |
                     [
                       {"name": "ENV_TEMPLATE", "value": "packaged-st.yaml"},
-                      {"name": "ENV_REGION", "value": "${DevRegion}"},
-                      {"name": "ENV_STACK_NAME", "value": "${DevStackName}"},
-                      {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${DevPipelineExecutionRole}"},
-                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${DevCloudFormationExecutionRole}"},
-                      {"name": "ENV_BUCKET", "value": "${DevArtifactBucket}"},
-                      {"name": "ENV_IMAGE_REPOSITORY", "value": "${DevImageRepository}"}
+                      {"name": "ENV_REGION", "value": "${StRegion}"},
+                      {"name": "ENV_STACK_NAME", "value": "${StStackName}"},
+                      {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${StPipelineExecutionRole}"},
+                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${StCloudFormationExecutionRole}"},
+                      {"name": "ENV_BUCKET", "value": "${StArtifactBucket}"},
+                      {"name": "ENV_IMAGE_REPOSITORY", "value": "${StImageRepository}"}
                     ]
                 InputArtifacts:
                   - Name: BuildArtifactAsZip
@@ -343,6 +357,20 @@ Resources:
                   Provider: Manual
                   Version: "1"
                 RunOrder: 1
+                Configuration:
+                  ProjectName: !Ref CodeBuildProjectApprove
+                  EnvironmentVariables: !Sub |
+                    [
+                      {"name": "ENV_TEMPLATE", "value": "packaged-prod.yaml"},
+                      {"name": "ENV_REGION", "value": "${ProdRegion}"},
+                      {"name": "ENV_STACK_NAME", "value": "${ProdStackName}"},
+                      {"name": "ENV_PIPELINE_EXECUTION_ROLE", "value": "${ProdPipelineExecutionRole}"},
+                      {"name": "ENV_CLOUDFORMATION_EXECUTION_ROLE", "value": "${ProdCloudFormationExecutionExeRole}"},
+                      {"name": "ENV_BUCKET", "value": "${ProdArtifactBucket}"},
+                      {"name": "ENV_IMAGE_REPOSITORY", "value": "${ProdImageRepository}"}
+                    ]
+                InputArtifacts:
+                  - Name: BuildArtifactAsZip
               - Name: DeployProd
                 ActionTypeId:
                   Category: Build
@@ -723,6 +751,21 @@ Resources:
       Source:
         Type: CODEPIPELINE
         BuildSpec: pipeline/buildspec_deploy.yml
+
+  CodeBuildProjectApprove:
+    Condition: IsMainBranchPipeline
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: pipeline/buildspec_approve.yml
 Outputs:
   CodeStarConnectionArn:
     Condition: CreateConnection
